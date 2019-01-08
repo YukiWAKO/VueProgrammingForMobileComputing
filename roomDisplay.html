@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-utf-8">
+    <title>Room Display</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <table id="appRooms">
+        <caption> Room Info </caption>
+        <tr>
+            <th scope="col" align="center">#</th>
+            <th scope="col" align="center">Room Name</th>
+            <th scope="col" align="center">Light Status</th>
+            <th scope="col" align="center">Light Level</th>
+            <th scope="col" align="center">Switch Light</th>
+        </tr>
+        <tr v-for="room in rooms">
+            <td scope="col" align="center">{{room.id}}</td>
+            <td scope="col" align="center">{{room.name}}</td>
+            <td v-if='room.status == "ON"'><img v-bind:id="room.id" src="img/ic_bulb_on.png"></td>
+            <td v-else><img v-bind:id="room.id" src="img/ic_bulb_off.png"></td>
+            <td scope="col" align="center">{{room.level}}</td>
+            <td scope="col" align="center"><button v-on:click="changeRoomLight(room.id)"><img src="img/switch.png"></button></td>
+        </tr>
+    </table>
+    <br>
+
+
+
+    <script>
+        const spring_url_api = "https://fair-corp.cleverapps.io/api"
+//          const spring_url_api = "127.0.0.1:8080/api"
+
+
+        var vm_rooms = new Vue({
+            el: "#appRooms",
+            data: {
+                rooms: []
+            },
+            created() {
+                let get_url = spring_url_api + "/rooms"
+                fetch(get_url)
+                    .then(response => response.json())
+                    .then(json => {
+                        this.rooms = json
+                    })
+            },
+            methods: {
+                changeRoomLight: function(id){
+                    let put_url = spring_url_api + "/rooms/" + id + "/switch"
+                    let get_url = spring_url_api + "/rooms"
+                    axios.put(put_url, id).then(response =>{
+                        console.log(response.data)
+                        this.rooms['id'] = response.data['id']
+                        this.rooms['level'] = response.data['level']
+                        this.rooms['status'] = response.data['status']
+                        if(this.rooms['status']=="ON"){
+                            document.getElementById(this.rooms['id']).src="img/ic_bulb_on.png"
+                        }
+                        else{
+                            document.getElementById(this.rooms['id']).src="img/ic_bulb_off.png"
+                        }
+
+                    })
+                }
+            }
+        })
+
+    </script>
+</body>
+
+</html>
